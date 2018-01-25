@@ -56,19 +56,19 @@ app.layout = html.Div([
             'layout': go.Layout(
                 xaxis={'type': 'line', 'title': 'Speed (RPM)'},
                 yaxis={'title': 'Torque (lb-ft)'},
-                margin={'l': 40, 'b': 40, 't': 10, 'r': 40},
+                margin={'l': 60, 'b': 40, 't': 10, 'r': 60},
                 legend={'x': 0, 'y': 1},
                 hovermode='closest',
                 yaxis2=dict(
-                title='yaxis2 title',
-                titlefont=dict(
-                color='rgb(148, 103, 189)'
-                ),
-                tickfont=dict(
-                color='rgb(148, 103, 189)'
-                ),
-                overlaying='y',
-                side='right'
+                    title='Current (Amps)',
+                    titlefont=dict(
+                    color='rgb(148, 103, 189)'
+                    ),
+                    tickfont=dict(
+                    color='rgb(148, 103, 189)'
+                    ),
+                    overlaying='y',
+                    side='right'
                 )
             )
         }
