@@ -54,54 +54,60 @@ def CatmullRomChain(P):
 
   return C
 
-# Define a set of points for curve to go through
-Torque = [[0,776],[0,775],[595,659],[1150,1400],[1190,552],[1200,0],[1200,-1]]
-Current = [[0,951],[0,950],[595,855],[1150,650],[1190,152],[1200,61],[1200,60]]
-# Calculate the Catmull-Rom splines through the points
-c_torque = CatmullRomChain(Torque)
-c_current = CatmullRomChain(Current)
+##############################################################################
+#Execute example below if function python catmullrom.py is called 
+# as main in terminal, else ignore
 
-# Convert the Catmull-Rom curve points into x and y arrays and plot
-# x,y = zip(*c)
-# plt.plot(x,y)
-# # Plot the control points
-# px, py = zip(*Points)
-# plt.plot(px,py,'or')
-# plt.show()
+if __name__ == '__main__':
 
-xRPM, yTorque=zip(*c_torque)
-xRPM, yCurrent=zip(*c_current)
+      # Define a set of points for curve to go through
+      Torque = [[0,776],[0,775],[595,659],[1150,1400],[1190,552],[1200,0],[1200,-1]]
+      Current = [[0,951],[0,950],[595,855],[1150,650],[1190,152],[1200,61],[1200,60]]
+      # Calculate the Catmull-Rom splines through the points
+      c_torque = CatmullRomChain(Torque)
+      c_current = CatmullRomChain(Current)
 
-pxRPM, pyTorque =zip(*Torque)
-pxRPM, pyCurrent =zip(*Current)
+      # Convert the Catmull-Rom curve points into x and y arrays and plot
+      # x,y = zip(*c)
+      # plt.plot(x,y)
+      # # Plot the control points
+      # px, py = zip(*Points)
+      # plt.plot(px,py,'or')
+      # plt.show()
 
-fig,ax1 =plt.subplots()
+      xRPM, yTorque=zip(*c_torque)
+      xRPM, yCurrent=zip(*c_current)
 
-color='tab:blue'
-ax1.plot(xRPM,yTorque,'b-',label='Torque curve')
-ax1.plot(pxRPM,pyTorque,'bo',label='Torque Data')
+      pxRPM, pyTorque =zip(*Torque)
+      pxRPM, pyCurrent =zip(*Current)
 
-ax1.tick_params(axis='y',labelcolor=color)
-ax1.set_xlabel('RPM')
-ax1.set_ylabel('Torque',color=color)
-ax1.set_xlim(0,1400)
-ax1.set_ylim(0,1600)
-ax1.set_xticks(numpy.arange(0, 1400, 200))
-ax1.set_yticks(numpy.arange(0, 1600, 200))
+      fig,ax1 =plt.subplots()
 
-ax2=ax1.twinx()
-color='tab:red'
-ax2.set_ylabel('Amps',color=color)
-ax2.plot(pxRPM,pyCurrent,'ro',label='Current data')
-ax2.plot(xRPM,yCurrent,'r-',label='Current curve')
-ax2.tick_params(axis='y',labelcolor=color)
-ax2.set_ylim(0,1000)
+      color='tab:blue'
+      ax1.plot(xRPM,yTorque,'b-',label='Torque curve')
+      ax1.plot(pxRPM,pyTorque,'bo',label='Torque Data')
 
-ax1.yaxis.grid(True) # horizontal lines
-ax1.xaxis.grid(True) # vertical lines
-#fig.legend()
-fig.tight_layout()
-#plt.rc('grid', linestyle="--", color='black')
+      ax1.tick_params(axis='y',labelcolor=color)
+      ax1.set_xlabel('RPM')
+      ax1.set_ylabel('Torque',color=color)
+      ax1.set_xlim(0,1400)
+      ax1.set_ylim(0,1600)
+      ax1.set_xticks(numpy.arange(0, 1400, 200))
+      ax1.set_yticks(numpy.arange(0, 1600, 200))
 
-#plt.grid(True)
-plt.show()
+      ax2=ax1.twinx()
+      color='tab:red'
+      ax2.set_ylabel('Amps',color=color)
+      ax2.plot(pxRPM,pyCurrent,'ro',label='Current data')
+      ax2.plot(xRPM,yCurrent,'r-',label='Current curve')
+      ax2.tick_params(axis='y',labelcolor=color)
+      ax2.set_ylim(0,1000)
+
+      ax1.yaxis.grid(True) # horizontal lines
+      ax1.xaxis.grid(True) # vertical lines
+      #fig.legend()
+      fig.tight_layout()
+      #plt.rc('grid', linestyle="--", color='black')
+
+      #plt.grid(True)
+      plt.show()
