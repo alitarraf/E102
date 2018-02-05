@@ -66,24 +66,27 @@ app.layout = html.Div([
                     x=xRPM,
                     y=yTorque,
                     mode='lines',
-                    name='Torque curve'
+                    line = dict(width = 5,color = 'rgb(200, 0, 0)'),
+                    name='Torque curve',
                 ),
                 go.Scatter(
                     x=pxRPM,
                     y=pyTorque,
                     mode='markers',
-                    opacity=0.7,
-                    marker={
-                        'size': 15,
-                        'line': {'width': 0.5, 'color': 'white'}
-                    },
+                    #opacity=0.7,
+                    marker = dict(
+                    size = 10,
+                    color = 'rgb(200, 0, 0)',
+                    line = dict(width = 2,color = 'rgb(0, 0, 0)'),
+                    ),
                     name='Torque data',
-                    
+                    text=['','Locked Rotor','Pull up','Break Down','RATED','IDLE','']
                 ),
                 go.Scatter(
                     x=xRPM,
                     y=yCurrent,
                     mode='lines',
+                    line=dict(width=5,color = 'rgb(0, 0, 200)'),
                     name='Current curve',
                     yaxis='y2',
                 ),
@@ -91,30 +94,66 @@ app.layout = html.Div([
                     x=pxRPM,
                     y=pyCurrent,
                     mode='markers',
-                    opacity=0.7,
-                    marker={
-                        'size': 15,
-                        'line': {'width': 0.5, 'color': 'white'}
-                    },
+                    #opacity=0.7,
+                    marker = dict(
+                    size = 10,
+                    color = 'rgb(0, 0, 200)',
+                    line = dict(width = 2,color = 'rgb(0, 0, 0)'),
+                    ),
                     name='Current data',
                     yaxis='y2',
+                    text=['','Locked Rotor','Pull up','Break Down','RATED','IDLE','']
                 ),
             ],
             'layout': go.Layout(
-                xaxis={'type': 'line', 'title': 'Speed (RPM)'},
-                yaxis={'title': 'Torque (lb-ft)'},
-                margin={'l': 60, 'b': 40, 't': 10, 'r': 60},
-                legend={'x': 0, 'y': 1},
-                hovermode='closest',
+                xaxis=dict(
+#               type='line',
+                title='Speed (RPM)',
+                showgrid=True,
+                #zeroline=True,
+                showline=True,
+                gridcolor='#bdbdbd',
+                mirror="ticks",
+                ticks="inside",
+                tickwidth=1,
+                linewidth=2,
+                range=[0,1300]
+                ),
+                yaxis=dict(
+                    title= 'Torque (lb-ft)',
+                    titlefont=dict( color='rgb(200, 0, 0)' ),
+                    tickfont=dict( color='rgb(200, 0, 0)' ),
+                    range=[0, 1600],
+                    showgrid=True,
+                    #zeroline=True,
+                    showline=True,
+                    gridcolor='#bdbdbd',
+                    mirror="ticks",
+                    ticks="inside",
+                    tickwidth=1,
+                    linewidth=2
+                ),
                 
                 yaxis2=dict(
-                title='Current (Amps)',
-                titlefont=dict( color='rgb(148, 103, 189)' ),
-                tickfont=dict( color='rgb(148, 103, 189)' ),
-                anchor='free', #or 'x'
-                overlaying='y',
-                side='right'
-                )
+                    title='Current (Amps)',
+                    titlefont=dict( color='rgb(0, 0, 200)' ),
+                    tickfont=dict( color='rgb(0, 0, 200)' ),
+                    anchor='x', #or 'x'
+                    overlaying='y',
+                    side='right',
+                    range=[0, 1200],
+                    showline=True,
+                    showgrid=False,
+                    mirror="ticks",
+                    ticks="inside",
+                    tickwidth=1,
+                    linewidth=2
+                ),
+                margin={'l': 60, 'b': 40, 't': 10, 'r': 60},
+                #legend={'x': 0.5, 'y': 1},
+                hovermode='closest',
+                
+                showlegend=False,
             )
         }
     )
