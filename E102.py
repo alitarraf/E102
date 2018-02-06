@@ -139,6 +139,7 @@ app.layout = html.Div([
                     ),
                 ],
                 'layout': go.Layout(
+                    title='Torque Speed curve',
                     xaxis=dict(
     #               type='line',
                     title='Speed - (RPM)',
@@ -182,14 +183,14 @@ app.layout = html.Div([
                         tickwidth=1,
                         linewidth=2
                     ),
-                    margin={'l': 60, 'b': 40, 't': 10, 'r': 60},
+                    margin={'l': 60, 'b': 40, 't': 30, 'r': 60},
                     #legend={'x': 0.5, 'y': 1},
                     hovermode='closest',
                     
                     showlegend=False,
                 )
             },
-            style={'width':'600'}
+            style={'width':'600','height':'500'}
         ),
         style={'display':'inline-block'}
     ),
@@ -265,6 +266,7 @@ app.layout = html.Div([
                     ),
                 ],
                 'layout': go.Layout(
+                    title='Load Efficiency curve',
                     xaxis=dict(
     #               type='line',
                     title='Load - (%)',
@@ -311,14 +313,14 @@ app.layout = html.Div([
                         linewidth=2,
                         dtick= 20,
                     ),
-                    margin={'l': 60, 'b': 40, 't': 10, 'r': 60},
+                    margin={'l': 60, 'b': 40, 't': 30, 'r': 60},
                     #legend={'x': 0.5, 'y': 1},
                     hovermode='closest',
                     
                     showlegend=False,
                 )
             },
-            style={'width':'600'}
+            style={'width':'600','height':'500'}
         ),
         style={'display':'inline-block'}  
     ),
