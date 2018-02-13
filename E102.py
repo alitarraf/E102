@@ -325,7 +325,7 @@ app.layout = html.Div([
         style={'display':'inline-block'}  
     ),
 ],
-style={'width': '100%', 'display': 'inline-block'}
+style={'width': '60%', 'display': 'inline-block'}
 )
 
 if __name__ == '__main__':
