@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from scipy.interpolate import spline,interp1d
 from catmullrom import CatmullRomChain
-from pathlib import Path
+#from pathlib import Path
 from dash.dependencies import Input, Output
 import logging
 
@@ -27,7 +27,7 @@ colors = {
 #Appwdg=>mtrid==>subid
 
 #filepath variable to database
-root_dir = Path(r"C:\Users\User\Documents\E102\perf_dbase_wdg.xlsx")
+#root_dir = Path(r"C:\Users\User\Documents\E102\perf_dbase_wdg.xlsx")
 #dbase = root_dir.glob('**/*.xlsx')
 #database header names matrix
 """
@@ -52,7 +52,8 @@ APP_SRPM    AMP_NL      0
 # df_speed = pd.read_csv('MotorSpeedData.csv')
 # df_load = pd.read_csv('MotorLoadData.csv')
 #d = pd.read_excel(root_dir, sheet_name='dbase')
-d=pd.read_pickle('C:\Users\User\Documents\E102\perfdb.pkl') # serialised database in pickle file
+#d.to_pickle('perfdb.pkl')
+d=pd.read_pickle('perfdb.pkl') # serialised database in pickle file
 row=1000
 
 #saving index of mtrid to grab row location
