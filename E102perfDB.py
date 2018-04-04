@@ -1,3 +1,5 @@
+__author__='Ali T.'
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -9,6 +11,7 @@ from catmullrom import CatmullRomChain
 from pathlib import Path
 from dash.dependencies import Input, Output
 import logging
+import cx_Oracle
 
 app = dash.Dash()
 app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
@@ -27,7 +30,7 @@ colors = {
 #Appwdg=>mtrid==>subid
 
 #filepath variable to database
-root_dir = Path(r"C:\Users\User\Documents\E102\perf_dbase_wdg.xlsx")
+#root_dir = Path(r"C:\Users\User\Documents\E102\perf_dbase_wdg.xlsx")
 #dbase = root_dir.glob('**/*.xlsx')
 #database header names matrix
 """
@@ -52,12 +55,32 @@ APP_SRPM    AMP_NL      0
 # df_speed = pd.read_csv('MotorSpeedData.csv')
 # df_load = pd.read_csv('MotorLoadData.csv')
 #d = pd.read_excel(root_dir, sheet_name='dbase')
-d=pd.read_pickle('C:\Users\User\Documents\E102\perfdb.pkl') # serialised database in pickle file
+d=pd.read_pickle('perfdb.pkl') # serialised database in pickle file
 row=1000
 
 #saving index of mtrid to grab row location
 index=pd.Index(d['MTRID'])
 
+#Read from Oracle database
+def read_from_db (username, password, connectString,query, mode=None, save=False):
+ 
+    if mode is None:
+        connection = cx_Oracle.connect(username, password, connectString)
+    else:
+        connection = cx_Oracle.connect(username, password, connectString, mode)
+    with connection:
+        try:
+            df = pd.read_sql_query(query,connection)
+            if save:
+                df.to_csv('results.csv')
+            return df
+        except cx_Oracle.DatabaseError as dberror:
+            print dberror
+
+#to read from database into a pandas dataframe
+query='SELECT MTRID FROM DESIGN.VPERFORMANCE_DATA'
+mtridtable=read_from_db('***','***','***',query)
+indexmtrid=pd.Index(mtridtable)
 
 #extract data and save in dataframe table for load table
 def populate_load_table(row):
