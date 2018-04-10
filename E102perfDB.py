@@ -58,7 +58,7 @@ APP_SRPM    AMP_NL      0
 d=pd.read_pickle('perfdb.pkl') # serialised database in pickle file
 row=1000
 
-#saving index of mtrid to grab row location
+#saving index of  MTRID to grab row location,APP_WDG
 index=pd.Index(d['MTRID'])
 
 #Read from Oracle database
