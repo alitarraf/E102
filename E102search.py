@@ -16,6 +16,7 @@ from catmullrom import CatmullRomChain
 app = dash.Dash()
 
 app.scripts.config.serve_locally = True
+app.config['suppress_callback_exceptions']=True
 # app.css.config.serve_locally = True
 
 #DF_WALMART = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv')
@@ -129,6 +130,54 @@ def loadefficiency(row):
 
     return np.array(xload),np.array(pxload),np.array(yEff),np.array(pyEff),np.array(yCurrload),np.array(pyCurrload),np.array(yPF),np.array(pyPF)
 
+#extract data and save in dataframe table for load table
+def populate_load_table(row):
+    effLoadArray = np.array([np.nan,d.iloc[row]['EFF_25'],d.iloc[row]['EFF_50'],d.iloc[row]['EFF_75'],d.iloc[row]['EFF_100'],d.iloc[row]['EFF_115'],d.iloc[row]['EFF_125']])
+    pfLoadArray = np.array([d.iloc[row]['PF_NL'],d.iloc[row]['PF_25'],d.iloc[row]['PF_50'],d.iloc[row]['PF_75'],d.iloc[row]['PF_100'],d.iloc[row]['PF_115'],d.iloc[row]['PF_125']])
+    torqueLoadArray = np.array([0,d.iloc[row]['TQ_25'],d.iloc[row]['TQ_50'],d.iloc[row]['TQ_75'],d.iloc[row]['TQ_100'],1.15*d.iloc[row]['TQ_100'],d.iloc[row]['TQ_125']])
+    currentLoadArray = np.array([d.iloc[row]['AMP_NL'],d.iloc[row]['AMP_25'],d.iloc[row]['AMP_50'],d.iloc[row]['AMP_75'],d.iloc[row]['AMP_100'],d.iloc[row]['AMP_115'],d.iloc[row]['AMP_125']])
+
+    loadArray = np.array([0,25,50,75,100,115,125])
+    loadtable = pd.DataFrame(
+    {'Load-%': loadArray,
+    'Current-Amps':currentLoadArray,
+    'Torque-lb.ft':torqueLoadArray,
+    'Efficiency':effLoadArray,
+    'Power Factor':pfLoadArray})
+
+    loadtable=loadtable[['Load-%','Current-Amps','Torque-lb.ft','Efficiency','Power Factor']]
+
+    return loadtable
+
+#extract data and save in dataframe table for speed table
+def populate_speed_table(row):
+    rpmArray = np.array([0,d.iloc[row]['RPM_PU'],d.iloc[row]['RPM_BD'],d.iloc[row]['RPM_100'],d.iloc[row]['APP_SRPM'] ])
+    torqueArray = np.array([d.iloc[row]['TQ_LR'],d.iloc[row]['TQ_PU'],d.iloc[row]['TQ_BD'],d.iloc[row]['TQ_100'],0])
+    currentArray = np.array([d.iloc[row]['AMP_LR'],d.iloc[row]['AMP_PU'],d.iloc[row]['AMP_BD'],d.iloc[row]['AMP_100'],d.iloc[row]['AMP_NL']])
+
+    speedtable = pd.DataFrame(
+    {' ':['Locked Rotor','Pull-Up','Breakdown','Rated','Idle'],
+    'Speed': rpmArray,
+    'Current-Amps':currentArray,
+    'Torque-lb.ft':torqueArray,
+    })
+    speedtable=speedtable[[' ','Speed','Current-Amps','Torque-lb.ft']]
+    
+    return speedtable
+
+#function to generate table from pandas dataframe
+def generate_table(dataframe, max_rows=8):
+    return html.Table(
+        # Header
+        [html.Tr([html.Th(col) for col in dataframe.columns])] +
+
+        # Body
+        [html.Tr([
+            html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+        ]) for i in range(min(len(dataframe), max_rows))]
+    )
+
+
 ####################################
 ####################################
 
@@ -150,8 +199,18 @@ app.layout = html.Div([
     dcc.Graph(
         id='graph-gapminder'
     ),
+    html.Div([
+        html.Div(className="six columns",children=[html.H5('Motor speed data'),html.Div(id='speedtable')] ),
+        html.Div(className="six columns",children=[html.H5('Motor load data'),html.Div(id='loadtable')] ),
+    ],
+    #style={'width':'100%','float': 'center'}
+    ),
+
 ], className="container")
 
+###########################################
+##callback to get selected row indices#####
+###########################################
 
 @app.callback(
     Output('datatable-gapminder', 'selected_row_indices'),
@@ -166,6 +225,9 @@ def update_selected_row_indices(clickData, selected_row_indices):
                 selected_row_indices.append(point['pointNumber'])
     return selected_row_indices
 
+#################################################
+###CAllback to update figure#####################
+#################################################
 
 @app.callback(
     Output('graph-gapminder', 'figure'),
@@ -175,16 +237,17 @@ def update_selected_row_indices(clickData, selected_row_indices):
 def update_figure(rows, selected_row_indices):
 
     dff = pd.DataFrame(rows)
+    value=dff['WINDING'][selected_row_indices[0]]
+    row=index.get_loc(value)
+
     fig = plotly.tools.make_subplots(
         rows=1, cols=2,
         subplot_titles=('Torque-speed', 'Load-efficiency'),
         shared_xaxes=False)
-    marker = {'color': ['#0074D9']*len(dff)}
+    #marker = {'color': ['#0074D9']*len(dff)}
     # for i in (selected_row_indices or []):
     #     marker['color'][i] = '#FF851B'
 
-    value=dff['WINDING'][selected_row_indices[0]]
-    row=index.get_loc(value)
     
     xRPM,pxRPM,yTorque,pyTorque,yCurrent,pyCurrent = torquespeed(row)
     xload,pxload,yEff,pyEff,yCurrload,pyCurrload,yPF,pyPF = loadefficiency(row)
@@ -426,14 +489,51 @@ def update_figure(rows, selected_row_indices):
     }
     #fig['layout']['yaxis3']['type'] = 'log'
     
-    #logging.warning('type(selected row) is %s, value is %s', type(selected_row_indices),selected_row_indices)
-    #logging.warning('type(dff) is %s, value is %s', type(dff['WINDING'][selected_row_indices[0]]),dff['WINDING'][selected_row_indices[0]] )
-    #logging.warning('Fig(layout) value is %s', fig['layout'])
+    # logging.warning('type(selected row) is %s, value is %s', type(selected_row_indices),selected_row_indices)
+    # logging.warning('type(dff) is %s, value is %s', type(dff['WINDING'][selected_row_indices[0]]),dff['WINDING'][selected_row_indices[0]] )
+    # logging.warning('row value is %s', row)
     #logging.warning('Fig(data) value is %s', fig['data'])
      
     
- 
     return fig
+
+#################################
+#callback to update load table###
+#################################
+@app.callback(
+    Output('loadtable', 'children'),
+    [Input('datatable-gapminder', 'rows'),
+    Input('datatable-gapminder', 'selected_row_indices')]
+    )
+
+    
+def update_loadtable(rows, selected_row_indices):
+    dff = pd.DataFrame(rows)
+    value=dff['WINDING'][selected_row_indices[0]]
+    row=index.get_loc(value)
+
+    dloadtable = populate_load_table(row)
+    logging.warning('row value is %s', row)
+
+    return generate_table(dloadtable)
+
+##################################    
+#callback to update speed table###
+##################################
+
+@app.callback(
+    Output('speedtable', 'children'),
+    [Input('datatable-gapminder', 'rows'),
+    Input('datatable-gapminder', 'selected_row_indices')]
+    )
+
+def update_speedtable(rows, selected_row_indices):
+    dff = pd.DataFrame(rows)
+    value=dff['WINDING'][selected_row_indices[0]]
+    row=index.get_loc(value)
+
+    dspeedtable = populate_speed_table(row)
+    return generate_table(dspeedtable)
 
 
 app.css.append_css({
