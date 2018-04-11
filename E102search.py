@@ -19,28 +19,6 @@ app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions']=True
 # app.css.config.serve_locally = True
 
-#DF_WALMART = pd.read_csv('https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv')
-
-# DF_GAPMINDER = pd.read_csv(
-#     'https://raw.githubusercontent.com/plotly/datasets/master/gapminderDataFiveYear.csv'
-# )
-# DF_GAPMINDER = DF_GAPMINDER[DF_GAPMINDER['year'] == 2007]
-# DF_GAPMINDER.loc[0:20]
-
-# DF_SIMPLE = pd.DataFrame({
-#     'x': ['A', 'B', 'C', 'D', 'E', 'F'],
-#     'y': [4, 3, 1, 2, 3, 6],
-#     'z': ['a', 'b', 'c', 'a', 'b', 'c']
-# })
-
-# ROWS = [
-#     {'a': 'AA', 'b': 1},
-#     {'a': 'AB', 'b': 2},
-#     {'a': 'BB', 'b': 3},
-#     {'a': 'BC', 'b': 4},
-#     {'a': 'CC', 'b': 5},
-#     {'a': 'CD', 'b': 6}
-# ]
 
 DF_GAPMINDER = pd.read_csv('searchDb.csv')# search table database
 d=pd.read_pickle('perfdb.pkl') # performance curves serialised database in pickle file
@@ -196,6 +174,7 @@ app.layout = html.Div([
         id='datatable-gapminder'
     ),
     html.Div(id='selected-indexes'),
+
     dcc.Graph(
         id='graph-gapminder'
     ),
@@ -206,7 +185,7 @@ app.layout = html.Div([
     #style={'width':'100%','float': 'center'}
     ),
 
-], className="container")
+ ], className="container")
 
 ###########################################
 ##callback to get selected row indices#####
@@ -214,8 +193,9 @@ app.layout = html.Div([
 
 @app.callback(
     Output('datatable-gapminder', 'selected_row_indices'),
-    [Input('graph-gapminder', 'clickData')],
+    [Input('datatable-gapminder', 'clickData')],
     [State('datatable-gapminder', 'selected_row_indices')])
+
 def update_selected_row_indices(clickData, selected_row_indices):
     if clickData:
         for point in clickData['points']:
@@ -226,7 +206,18 @@ def update_selected_row_indices(clickData, selected_row_indices):
     return selected_row_indices
 
 #################################################
-###CAllback to update figure#####################
+###CAllback to update indices row display########
+#################################################
+
+@app.callback(
+    Output('selected-indexes', 'children'),
+    [Input('datatable-gapminder', 'selected_row_indices')])
+
+def update_indices(selected_row_indices):
+    return 'Selected row indices: "{}" '.format(selected_row_indices)
+
+#################################################
+###Callback to update figure#####################
 #################################################
 
 @app.callback(
