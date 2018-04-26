@@ -20,9 +20,13 @@ app.config['suppress_callback_exceptions']=True
 # app.css.config.serve_locally = True
 
 
-DF_GAPMINDER = pd.read_csv('searchDb.csv')# search table database
+DF_searchTable = pd.read_csv('searchDb.csv')# search table database
+#DF_searchTable=DF_searchTable.reindex_axis(['a.b.WINDING','REV','HP','FREQ','POLES','ENCLOS','DESIGN','EFFICIENCY','FRAME','STACK','FAN','DUTY','NOTES'],axis=1)
+#add an index column to prevent close to duplicate row from interfering with selecting rows
+#DF_searchTable = DF_searchTable.insert(0,'1.index',np.arange(847))
+#DF_searchTable=DF_searchTable.assign(a.index=pd.Series(np.arange(len(DF_searchTable.index))).values)
+
 d=pd.read_pickle('perfdb.pkl') # performance curves serialised database in pickle file
-row=1000
 index=pd.Index(d['APP_WDG'])
 
 
@@ -157,26 +161,25 @@ def generate_table(dataframe, max_rows=8):
 
 
 ####################################
+#APP LAYOUT#########################
 ####################################
 
 app.layout = html.Div([
     html.H4('SEARCH WINDING & PERFORMANCE CURVES WEBPAGE'),
     dt.DataTable(
-        rows=DF_GAPMINDER.to_dict('records'),
-
-        # optional - sets the order of columns
-        columns=sorted(DF_GAPMINDER.columns),
-
+        rows=DF_searchTable.to_dict('records'),
+        columns=sorted(DF_searchTable.columns),
         row_selectable=True,
         filterable=True,
+        editable= False,
         sortable=True,
         selected_row_indices=[],
-        id='datatable-gapminder'
+        id='data-searchtable'
     ),
     html.Div(id='selected-indexes'),
 
     dcc.Graph(
-        id='graph-gapminder'
+        id='performanceCurve'
     ),
     html.Div([
         html.Div(className="six columns",children=[html.H5('Motor speed data'),html.Div(id='speedtable')] ),
@@ -192,9 +195,9 @@ app.layout = html.Div([
 ###########################################
 
 @app.callback(
-    Output('datatable-gapminder', 'selected_row_indices'),
-    [Input('datatable-gapminder', 'clickData')],
-    [State('datatable-gapminder', 'selected_row_indices')])
+    Output('data-searchtable', 'selected_row_indices'),
+    [Input('data-searchtable', 'clickData')],
+    [State('data-searchtable', 'selected_row_indices')])
 
 def update_selected_row_indices(clickData, selected_row_indices):
     if clickData:
@@ -211,24 +214,30 @@ def update_selected_row_indices(clickData, selected_row_indices):
 
 @app.callback(
     Output('selected-indexes', 'children'),
-    [Input('datatable-gapminder', 'selected_row_indices')])
+    [Input('data-searchtable', 'rows'),
+    Input('data-searchtable', 'selected_row_indices')])
 
-def update_indices(selected_row_indices):
-    return 'Selected row indices: "{}" '.format(selected_row_indices)
+def update_indices(rows,selected_row_indices):
+    
+    dff = pd.DataFrame(rows)
+    value=dff['b.WINDING'][selected_row_indices[0]]
+    row=index.get_loc(value)
+
+    return ' Winding is "{}". \n Corresponding perfDb row is "{}" '.format(value,row)
 
 #################################################
 ###Callback to update figure#####################
 #################################################
 
 @app.callback(
-    Output('graph-gapminder', 'figure'),
-    [Input('datatable-gapminder', 'rows'),
-     Input('datatable-gapminder', 'selected_row_indices')])
+    Output('performanceCurve', 'figure'),
+    [Input('data-searchtable', 'rows'),
+     Input('data-searchtable', 'selected_row_indices')])
 
 def update_figure(rows, selected_row_indices):
 
     dff = pd.DataFrame(rows)
-    value=dff['WINDING'][selected_row_indices[0]]
+    value=dff['b.WINDING'][selected_row_indices[0]]
     row=index.get_loc(value)
 
     fig = plotly.tools.make_subplots(
@@ -481,7 +490,7 @@ def update_figure(rows, selected_row_indices):
     #fig['layout']['yaxis3']['type'] = 'log'
     
     # logging.warning('type(selected row) is %s, value is %s', type(selected_row_indices),selected_row_indices)
-    # logging.warning('type(dff) is %s, value is %s', type(dff['WINDING'][selected_row_indices[0]]),dff['WINDING'][selected_row_indices[0]] )
+    # logging.warning('type(dff) is %s, value is %s', type(dff['b.WINDING'][selected_row_indices[0]]),dff['b.WINDING'][selected_row_indices[0]] )
     # logging.warning('row value is %s', row)
     #logging.warning('Fig(data) value is %s', fig['data'])
      
@@ -493,14 +502,14 @@ def update_figure(rows, selected_row_indices):
 #################################
 @app.callback(
     Output('loadtable', 'children'),
-    [Input('datatable-gapminder', 'rows'),
-    Input('datatable-gapminder', 'selected_row_indices')]
+    [Input('data-searchtable', 'rows'),
+    Input('data-searchtable', 'selected_row_indices')]
     )
 
     
 def update_loadtable(rows, selected_row_indices):
     dff = pd.DataFrame(rows)
-    value=dff['WINDING'][selected_row_indices[0]]
+    value=dff['b.WINDING'][selected_row_indices[0]]
     row=index.get_loc(value)
 
     dloadtable = populate_load_table(row)
@@ -514,13 +523,13 @@ def update_loadtable(rows, selected_row_indices):
 
 @app.callback(
     Output('speedtable', 'children'),
-    [Input('datatable-gapminder', 'rows'),
-    Input('datatable-gapminder', 'selected_row_indices')]
+    [Input('data-searchtable', 'rows'),
+    Input('data-searchtable', 'selected_row_indices')]
     )
 
 def update_speedtable(rows, selected_row_indices):
     dff = pd.DataFrame(rows)
-    value=dff['WINDING'][selected_row_indices[0]]
+    value=dff['b.WINDING'][selected_row_indices[0]]
     row=index.get_loc(value)
 
     dspeedtable = populate_speed_table(row)
@@ -532,7 +541,7 @@ app.css.append_css({
 })
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
 
 
 #try app wdg T3654213
