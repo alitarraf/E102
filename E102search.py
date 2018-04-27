@@ -17,17 +17,22 @@ app = dash.Dash()
 
 app.scripts.config.serve_locally = True
 app.config['suppress_callback_exceptions']=True
-# app.css.config.serve_locally = True
 
-
-DF_searchTable = pd.read_csv('searchDb.csv')# search table database
-#DF_searchTable=DF_searchTable.reindex_axis(['a.b.WINDING','REV','HP','FREQ','POLES','ENCLOS','DESIGN','EFFICIENCY','FRAME','STACK','FAN','DUTY','NOTES'],axis=1)
+#DF_searchTable=DF_searchTable.reindex_axis(['a.c.WINDING,'REV','HP','FREQ','POLES','ENCLOS','DESIGN','EFFICIENCY','FRAME','STACK','FAN','DUTY','NOTES'],axis=1)
 #add an index column to prevent close to duplicate row from interfering with selecting rows
 #DF_searchTable = DF_searchTable.insert(0,'1.index',np.arange(847))
 #DF_searchTable=DF_searchTable.assign(a.index=pd.Series(np.arange(len(DF_searchTable.index))).values)
 
-d=pd.read_pickle('perfdb.pkl') # performance curves serialised database in pickle file
+d=pd.read_csv('vperformancedata.csv') # performance database downloaded from Oracle Jenkins on 4/26/2018
 index=pd.Index(d['APP_WDG'])
+DF_searchTable=d.filter(items=['MTRID','SUBID','APP_WDG','APP_RNUM','APP_HP','APP_FREQ','POLES','APP_ENCL','APP_DESCODE',
+                 'APP_EFFCODE','FR_SIZE','STACK','APP_FAN','DUTY','APP_COMM'])                 
+
+DF_searchTable=DF_searchTable.rename(index=str, 
+                columns={'MTRID':'a.MTRID','SUBID':'b.SUBID','APP_WDG':'c.WINDING','APP_RNUM':'d.REV','APP_HP':'e.HP','APP_FREQ':'f.FREQ',
+                        'POLES':'g.POLES','APP_ENCL':'h.ENCLO','APP_DESCODE':'i.DESIGN','APP_EFFCODE':'j.EFF','FR_SIZE':'k.FRAME',                
+                        'STACK':'l.STACK','APP_FAN':'m.FAN','DUTY':'n.DUTY','APP_COMM':'o.NOTE'
+                })
 
 
 #################################
@@ -220,7 +225,7 @@ def update_selected_row_indices(clickData, selected_row_indices):
 def update_indices(rows,selected_row_indices):
     
     dff = pd.DataFrame(rows)
-    value=dff['b.WINDING'][selected_row_indices[0]]
+    value=dff['c.WINDING'][selected_row_indices[0]]
     row=index.get_loc(value)
 
     return ' Winding is "{}". \n Corresponding perfDb row is "{}" '.format(value,row)
@@ -237,7 +242,7 @@ def update_indices(rows,selected_row_indices):
 def update_figure(rows, selected_row_indices):
 
     dff = pd.DataFrame(rows)
-    value=dff['b.WINDING'][selected_row_indices[0]]
+    value=dff['c.WINDING'][selected_row_indices[0]]
     row=index.get_loc(value)
 
     fig = plotly.tools.make_subplots(
@@ -490,7 +495,7 @@ def update_figure(rows, selected_row_indices):
     #fig['layout']['yaxis3']['type'] = 'log'
     
     # logging.warning('type(selected row) is %s, value is %s', type(selected_row_indices),selected_row_indices)
-    # logging.warning('type(dff) is %s, value is %s', type(dff['b.WINDING'][selected_row_indices[0]]),dff['b.WINDING'][selected_row_indices[0]] )
+    # logging.warning('type(dff) is %s, value is %s', type(dff['c.WINDING][selected_row_indices[0]]),dff['c.WINDING][selected_row_indices[0]] )
     # logging.warning('row value is %s', row)
     #logging.warning('Fig(data) value is %s', fig['data'])
      
@@ -509,7 +514,7 @@ def update_figure(rows, selected_row_indices):
     
 def update_loadtable(rows, selected_row_indices):
     dff = pd.DataFrame(rows)
-    value=dff['b.WINDING'][selected_row_indices[0]]
+    value=dff['c.WINDING'][selected_row_indices[0]]
     row=index.get_loc(value)
 
     dloadtable = populate_load_table(row)
@@ -529,7 +534,7 @@ def update_loadtable(rows, selected_row_indices):
 
 def update_speedtable(rows, selected_row_indices):
     dff = pd.DataFrame(rows)
-    value=dff['b.WINDING'][selected_row_indices[0]]
+    value=dff['c.WINDING'][selected_row_indices[0]]
     row=index.get_loc(value)
 
     dspeedtable = populate_speed_table(row)
